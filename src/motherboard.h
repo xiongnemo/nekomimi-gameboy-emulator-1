@@ -35,6 +35,10 @@ public:
     // main loop
     void loop(Emulatorform &form, Joypad &joypad, uint8_t scale);
 
+    // save&load
+    void save(void);
+    void load(void);
+
 };
 } // namespace gameboy
 #endif

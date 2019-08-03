@@ -13,6 +13,9 @@ bool Emulatorform::get_joypad_input(Joypad &joypad, Memory &mem)
     // K-B
     // T-Select
     // Enter-Start
+    // Q-Quick Save
+    // Y-Quick Load
+    // P-Quit and Save
 
     while (SDL_PollEvent(&(Emulatorform::joypad_event)))
     {
@@ -30,6 +33,7 @@ bool Emulatorform::get_joypad_input(Joypad &joypad, Memory &mem)
             {
             // Quit Emulation Percess
             case SDLK_ESCAPE:
+                printf("Now quitting.\n");
                 return false;
                 break;
 
@@ -89,6 +93,24 @@ bool Emulatorform::get_joypad_input(Joypad &joypad, Memory &mem)
                 joypad.key_column = 0x10;
                 joypad.column_controls = 1;
                 joypad.keys_controls &= 0x7;
+                break;
+
+            // hit Quick Save
+            case SDLK_q:
+                joypad.save_flag = 1;
+                printf("Will save before next poll...\n");
+                break;
+
+            // hit Quick Load
+            case SDLK_y:
+                joypad.load_flag = 1;
+                printf("Will load before next poll...\n");
+                break;
+
+            // Quit and Save
+            case SDLK_p:
+                printf("Quit and save.\n");
+                return false;
                 break;
             }
             //joypad.joypad_interrupts(mem);
@@ -150,7 +172,7 @@ bool Emulatorform::get_joypad_input(Joypad &joypad, Memory &mem)
                 joypad.keys_controls |= 0x4;
                 break;
 
-            /// release START
+            // release START
             case SDLK_RETURN:
                 joypad.key_column = 0x10;
                 joypad.column_controls = 1;

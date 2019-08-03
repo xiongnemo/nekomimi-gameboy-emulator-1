@@ -104,11 +104,51 @@ void Motherboard::loop(Emulatorform &form, Joypad &joypad, uint8_t scale)
                 //SDL_Delay(FPS-SDL_GetTicks()+fps_timer);
             }
             //fps_timer=SDL_GetTicks();
+            if (joypad.save_flag)
+            {
+                save();
+                joypad.save_flag = 0;
+            }
+            if (joypad.load_flag)
+            {
+                load();
+                joypad.load_flag = 0;
+            }
         }
         else
         {
+            if (joypad.save_flag)
+            {
+                save();
+                joypad.save_flag = 0;
+            }
             break;
         }
     }
 }
 
+void Motherboard::save(void)
+{
+    FILE *save_out = fopen("save.gbsave", "w+b");
+    fwrite(mem.memory_byte, sizeof(uint8_t), 0x10000, save_out);
+    printf("Memory written to save.gbsave.\n");
+    fwrite(cpu.reg.register_byte, sizeof(uint8_t), 0x08, save_out);
+    fwrite(cpu.reg.register_word, sizeof(uint16_t), 0x02, save_out);
+    printf("Registers written to save.gbsave.\n");
+    fclose(save_out);
+    save_out = nullptr;
+    printf("Sucessfully quick saved.\n");
+}
+
+void Motherboard::load(void)
+{
+    FILE *save_in = fopen("save.gbsave", "r+b");
+    fread(mem.memory_byte, sizeof(uint8_t), 0x10000, save_in);
+    printf("Memory restored from save.gbsave.\n");
+    fread(cpu.reg.register_byte, sizeof(uint8_t), 0x08, save_in);
+    fread(cpu.reg.register_word, sizeof(uint16_t), 0x02, save_in);
+    printf("Registers restored from save.gbsave.\n");
+    fclose(save_in);
+    save_in = nullptr;
+    printf("Sucessfully quick loaded.\n");
+}
