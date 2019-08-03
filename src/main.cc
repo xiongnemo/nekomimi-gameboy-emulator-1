@@ -66,6 +66,7 @@ int main(int argc, char *argv[])
     {
         std::cout << "Unrecognized counts of arguments!" << std::endl;
         std::cout << "Quiting..." << std::endl;
+        return 0xDE;
     }
     }
     // create a white window
