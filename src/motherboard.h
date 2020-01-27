@@ -11,9 +11,12 @@
 #include "memory.h"
 #include "cartridge.h"
 #include "emulator-form.h"
+#include <SDL2/SDL_thread.h>
 #include <chrono>
 #include <thread>
 #include <cstdlib>
+
+#define FPS 1000/59.7
 
 namespace gameboy
 {
@@ -23,20 +26,19 @@ class Motherboard
 public:
     gameboy::Cpu cpu;
     gameboy::Memory mem;
-    gameboy::Emulatorform form;
     gameboy::Ppu ppu;
-    gameboy::Joypad the_joypad;
     gameboy::Timer timer;
 
     // power on sequence
     bool power_on(int argc, char *argv[]);
 
-    // major workload
-    bool workload();
+    // main loop
+    void loop(Emulatorform &form, Joypad &joypad, uint8_t scale);
 
-    void loop();
+    // save&load
+    void save(void);
+    void load(void);
 
-    bool frame_rate_control();
 };
 } // namespace gameboy
 #endif
