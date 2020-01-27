@@ -16,6 +16,7 @@ bool Emulatorform::get_joypad_input(Joypad &joypad, Memory &mem)
     // Q-Quick Save
     // Y-Quick Load
     // P-Quit and Save
+    // L-Fast Foward
 
     while (SDL_PollEvent(&(Emulatorform::joypad_event)))
     {
@@ -111,6 +112,12 @@ bool Emulatorform::get_joypad_input(Joypad &joypad, Memory &mem)
             case SDLK_p:
                 printf("Quit and save.\n");
                 return false;
+                break;
+
+            // hit Fast Foward
+            case SDLK_l:
+                joypad.fast_forward_flag = 1;
+                printf("Triggering fast foward...\n");
                 break;
             }
             //joypad.joypad_interrupts(mem);
@@ -289,7 +296,7 @@ void Emulatorform::create_window(uint16_t on_screen_window_width, uint16_t on_sc
 
     if( SDL_NumJoysticks() < 1 )
     {
-        printf( "Warning: No joysticks connected!\n" );
+        printf( "[No joysticks connected!]\n" );
     }
     else
     {
@@ -300,6 +307,13 @@ void Emulatorform::create_window(uint16_t on_screen_window_width, uint16_t on_sc
             printf( "Warning: Unable to open game controller! SDL Error: %s\n", SDL_GetError() );
         }
     }
+    printf("\n\nCurrent Key Mapping:\n");
+    printf("W - UP       S - DOWN    A - LEFT   D - RIGHT\t\n");
+    printf("J - A        K - B\n");
+    printf("T - Select   Enter - Start\n");
+    printf("Q - Quick Save\n");
+    printf("Y - Quick Load\n");
+    printf("P - Quit and Save\n\n");
 
 }
 
