@@ -36,7 +36,7 @@ public:
     uint8_t ram_attributes_bank_count = 0;
     uint8_t ram_attributes_bank_size = 0;// in kb
     uint8_t rom_bytes[524288] = {0};
-    char rom_name[15];
+    char rom_name[16];
     uint8_t auto_optimization = 1;
 
     FILE *rom_file;
