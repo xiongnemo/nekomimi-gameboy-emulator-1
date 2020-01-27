@@ -148,8 +148,8 @@ void Ppu::set_mode(PpuMode mode, Memory &mem)
     }
 
     if ((mode == PpuMode::mode_hblank && (stat_byte & 0x0F)) ||
-        (mode == PpuMode::mode_vblank && (stat_byte & 0x10)) ||
-        (mode == PpuMode::mode_oam_search && (stat_byte & 0x20)))
+            (mode == PpuMode::mode_vblank && (stat_byte & 0x10)) ||
+            (mode == PpuMode::mode_oam_search && (stat_byte & 0x20)))
 
     {
         interrupt_flag_byte |= 0x02;
@@ -169,52 +169,7 @@ void Ppu::draw_line(uint8_t line_number_y, Memory &mem, Emulatorform &form, uint
 
     uint8_t lcdc_byte = mem.get_memory_byte(LCDC_ADDRESS);
 
-    // get background tile data address
-    // 0: $8800-$97FF,  tile # ranging 0~255, #0 is 0x8800
-    // 1: $8000-$8FFF,  tile # ranging -128~127, #0 is 0x9000
-    // but from the FIFO example in the Ultimate GameBoy talk
-    // we can simply use #0 for 8000
-    // example is in how to put one line into buffer...
-
-    // 4096 bytes in all, 16 bytes per tile, one 8*8 image
-    // which means, 1 line (8 pixels) occupy 2 bytes
-    // if you want to read the i-th line in the tile #j, you should read address:
-    // TILE_START_ADDRESS + j * 16 +(i-1) * 2 and TILE_START_ADDRESS + j*16 + (i-1) * 2 + 1
-
-    // judge bit 4 in LCDC (BG & Windows Tile Data)
-    bool background_tile_data_address_flag = lcdc_byte & 0x10;
-
-    uint16_t background_tile_data_start_address = 0;
-
-    if (background_tile_data_address_flag)
-    {
-        background_tile_data_start_address = 0x8000;
-    }
-    else
-    {
-        // use signed
-        background_tile_data_start_address = 0x9000;
-    }
-
-    // get background tile map Address
-    // 0: $9800-$9BFF
-    // 1: $9C00-$9FFF
-
-    // judge bit 3 in LCDC (BG Tile Map Address)
-    bool background_tile_map_address_flag = lcdc_byte & 0x08;
-
-    uint16_t background_tile_map_start_address = 0;
-
-    if (background_tile_map_address_flag)
-    {
-        background_tile_map_start_address = 0x9C00;
-    }
-    else
-    {
-        background_tile_map_start_address = 0x9800;
-    }
-
-    // judge bit 0 in LCDC (BG Enable)
+    // judge bit 0 in LCDC (BG & Window Enable)
     bool render_background = lcdc_byte & 0x01;
 
     // if bit 0 in LCDC (BG Enable) is true
@@ -228,22 +183,48 @@ void Ppu::draw_line(uint8_t line_number_y, Memory &mem, Emulatorform &form, uint
     // we *find* the 0x04 tile with line 1 in address 0x8040 and 0x8041
     // 0x8040 = 0x8000 + 0x04 * 0x10
 
+    // judge bit 4 in LCDC (BG & Windows Tile Data)
+    bool background_window_tile_data_address_flag = lcdc_byte & 0x10;
+    // if the flag is false, use signed index
+    uint16_t background_window_tile_data_start_address = (background_window_tile_data_address_flag) ? 0x8000 : 0x9000;
+
     // render background
     if (render_background)
     {
+        // get background tile data address
+        // 0: $8800-$97FF,  tile # ranging 0~255, #0 is 0x8800
+        // 1: $8000-$8FFF,  tile # ranging -128~127, #0 is 0x9000
+        // but from the FIFO example in the Ultimate GameBoy talk
+        // we can simply use #0 for 8000
+        // example is in how to put one line into buffer...
+
+        // 4096 bytes in all, 16 bytes per tile, one 8*8 image
+        // which means, 1 line (8 pixels) occupy 2 bytes
+        // if you want to read the i-th line in the tile #j, you should read address:
+        // TILE_START_ADDRESS + j * 16 +(i-1) * 2 and TILE_START_ADDRESS + j*16 + (i-1) * 2 + 1
+
+
+
+
+        // get background tile map Address
+        // 0: $9800-$9BFF
+        // 1: $9C00-$9FFF
+        // judge bit 3 in LCDC (BG Tile Map Address)
+        uint16_t background_tile_map_start_address = (lcdc_byte & 0x08) ? 0x9C00 : 0x9800;
+
         uint8_t SCY = mem.get_memory_byte(SCY_ADDRESS);
         uint8_t SCX = mem.get_memory_byte(SCX_ADDRESS);
         int y = (line_number_y + SCY) % 256; //locate background in background map
 
+        int last_tile_x = -1;
+        //it is strange, this two should be put outside.
         uint8_t tile_data_bytes_line_one = 0x00;
         uint8_t tile_data_bytes_line_two = 0x00;
 
-        int last_tile_x = -1;
-
         for (int i = 0; i < SCREEN_WIDTH; i++)
         {
-            int x = (i + SCX) % 256;
 
+            int x = (i + SCX) % 256;
             int tile_x = x / 8; //8 pixels per tile
             int tile_y = y / 8;
             int pixel_x = 8 - x % 8 - 1;
@@ -258,23 +239,93 @@ void Ppu::draw_line(uint8_t line_number_y, Memory &mem, Emulatorform &form, uint
                 // judge whether the number is unsigned
                 int tile_index = tmp_tile_index;
 
-                if (!background_tile_data_address_flag)
+                if (!background_window_tile_data_address_flag)
                 {
-                    // switch signed tile #
+                    // switch signed tile index
                     tile_index = (int8_t)tmp_tile_index;
                 }
 
                 // get tile data
-                tile_data_bytes_line_one = mem.get_memory_byte(background_tile_data_start_address + (tile_index * 16) + (pixel_y * 2));
-                tile_data_bytes_line_two = mem.get_memory_byte(background_tile_data_start_address + (tile_index * 16) + (pixel_y * 2) + 1);
+                tile_data_bytes_line_one = mem.get_memory_byte(background_window_tile_data_start_address + (tile_index * 16) + (pixel_y * 2));
+                tile_data_bytes_line_two = mem.get_memory_byte(background_window_tile_data_start_address + (tile_index * 16) + (pixel_y * 2) + 1);
                 last_tile_x = tile_x;
             }
 
             // mix pixel color of two lines
             int color = mix_tile_colors(pixel_x, tile_data_bytes_line_one, tile_data_bytes_line_two);
-
             // directly set color
             form.set_pixel_color(i, line_number_y, color, scale);
+        }
+    }
+
+
+    //render window
+    //judge bit 5 and bit 0
+    bool render_window = lcdc_byte & 0x20;
+
+    if (render_background && render_window)
+    {
+        // judge bit 6 in LCDC (Window Tile Map Address)
+        uint16_t window_tile_map_start_address = (lcdc_byte & 0x40) ? 0x9C00 : 0x9800;
+
+        uint8_t WY = mem.get_memory_byte(WY_ADDRESS);
+        int y = line_number_y - WY;
+
+        //whether we should draw window at this line
+        if ((line_number_y - WY) > 0)
+        {
+            uint8_t WX = mem.get_memory_byte(WX_ADDRESS);
+            if (WX < 7)
+            {
+                WX = 7;
+            }
+            //WX is offset from absolute screen coordinates by 7.
+            uint8_t absolute_WX = WX - 7;
+
+            uint8_t tile_data_bytes_line_one = 0x00;
+            uint8_t tile_data_bytes_line_two = 0x00;
+
+            int last_tile_x = -1;
+
+            for (int i = 0; i < SCREEN_WIDTH; i++)
+            {
+                if (i < absolute_WX)
+                {
+                    continue;
+                }
+                int x = i - absolute_WX;
+                int tile_x = x / 8; //8 pixels per tile
+                int tile_y = y / 8;
+                int pixel_x = 8 - x % 8 - 1;
+                int pixel_y = y % 8;
+
+                // render a new tile unless we get to the last
+                if (tile_x != last_tile_x)
+                {
+                    // get original tile number
+                    int tmp_tile_index = mem.get_memory_byte(window_tile_map_start_address + (tile_y * 32) + tile_x);
+
+                    // judge whether the number is unsigned
+                    int tile_index = tmp_tile_index;
+
+                    if (!background_window_tile_data_address_flag)
+                    {
+                        // switch signed tile index
+                        tile_index = (int8_t)tmp_tile_index;
+                    }
+
+                    // get tile data
+                    tile_data_bytes_line_one = mem.get_memory_byte(background_window_tile_data_start_address + (tile_index * 16) + (pixel_y * 2));
+                    tile_data_bytes_line_two = mem.get_memory_byte(background_window_tile_data_start_address + (tile_index * 16) + (pixel_y * 2) + 1);
+                    last_tile_x = tile_x;
+                }
+
+                // mix pixel color of two lines
+                int color = mix_tile_colors(pixel_x, tile_data_bytes_line_one, tile_data_bytes_line_two);
+
+                // directly set color
+                form.set_pixel_color(i, line_number_y, color, scale);
+            }
         }
     }
 
