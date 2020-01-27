@@ -138,12 +138,15 @@ void Motherboard::loop(Emulatorform &form, Joypad &joypad, uint8_t scale)
 
 void Motherboard::save(void)
 {
-    FILE *save_out = fopen("save.gbsave", "w+b");
+    char name_buffer[25];
+    strcpy(name_buffer, mem.cartridge.rom_name);
+    strcat(name_buffer, ".gbsave");
+    FILE *save_out = fopen(name_buffer, "w+b");
     fwrite(mem.memory_byte, sizeof(uint8_t), 0x10000, save_out);
     printf("Memory written to save.gbsave.\n");
     fwrite(cpu.reg.register_byte, sizeof(uint8_t), 0x08, save_out);
     fwrite(cpu.reg.register_word, sizeof(uint16_t), 0x02, save_out);
-    printf("Registers written to save.gbsave.\n");
+    printf("Registers written to %s.\n", name_buffer);
     fclose(save_out);
     save_out = nullptr;
     printf("Successfully quick saved.\n\n");
@@ -151,12 +154,15 @@ void Motherboard::save(void)
 
 void Motherboard::load(void)
 {
-    FILE *save_in = fopen("save.gbsave", "r+b");
+    char name_buffer[25];
+    strcpy(name_buffer, mem.cartridge.rom_name);
+    strcat(name_buffer, ".gbsave");
+    FILE *save_in = fopen(name_buffer, "r+b");
     fread(mem.memory_byte, sizeof(uint8_t), 0x10000, save_in);
     printf("Memory restored from save.gbsave.\n");
     fread(cpu.reg.register_byte, sizeof(uint8_t), 0x08, save_in);
     fread(cpu.reg.register_word, sizeof(uint16_t), 0x02, save_in);
-    printf("Registers restored from save.gbsave.\n");
+    printf("Registers restored from %s.\n", name_buffer);
     fclose(save_in);
     save_in = nullptr;
     running_speed = original_speed;
