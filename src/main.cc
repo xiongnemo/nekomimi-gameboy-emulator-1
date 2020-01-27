@@ -75,6 +75,9 @@ int main(int argc, char *argv[])
     // b:255
     form.create_window(SCREEN_WIDTH, SCREEN_HEIGHT, motherboard.mem.cartridge.rom_name, 255, 255, 255, scale);
 
+    motherboard.original_speed = motherboard.mem.cartridge.auto_optimization;
+    motherboard.running_speed = motherboard.mem.cartridge.auto_optimization;
+
     motherboard.loop(form, joypad, scale);
 
 #ifdef DEBUG

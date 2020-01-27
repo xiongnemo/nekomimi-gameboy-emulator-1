@@ -95,7 +95,7 @@ void Motherboard::loop(Emulatorform &form, Joypad &joypad, uint8_t scale)
         if (form.get_joypad_input(joypad, mem))
         {
             uint8_t cpu_cycle = cpu.next(mem);
-            ppu.ppu_main(mem.cartridge.auto_optimization * cpu_cycle, mem, form, scale);
+            ppu.ppu_main(running_speed * cpu_cycle, mem, form, scale);
             timer.add_time(4 * cpu_cycle, mem);
             //if(SDL_GetTicks()-fps_timer < FPS && ppu.ready_to_refresh)
             if(ppu.ready_to_refresh)
@@ -113,6 +113,15 @@ void Motherboard::loop(Emulatorform &form, Joypad &joypad, uint8_t scale)
             {
                 load();
                 joypad.load_flag = 0;
+            }
+            if (joypad.fast_forward_flag)
+            {
+                fast_forward();
+                joypad.fast_forward_flag = 0;
+            }
+            else
+            {
+                running_speed = original_speed;
             }
         }
         else
@@ -137,7 +146,7 @@ void Motherboard::save(void)
     printf("Registers written to save.gbsave.\n");
     fclose(save_out);
     save_out = nullptr;
-    printf("Sucessfully quick saved.\n");
+    printf("Successfully quick saved.\n\n");
 }
 
 void Motherboard::load(void)
@@ -150,5 +159,12 @@ void Motherboard::load(void)
     printf("Registers restored from save.gbsave.\n");
     fclose(save_in);
     save_in = nullptr;
-    printf("Sucessfully quick loaded.\n");
+    running_speed = original_speed;
+    printf("Successfully quick loaded.\n\n");
+}
+
+void Motherboard::fast_forward(void)
+{
+    running_speed = 32;
+    printf("Configured fast forward.\n");
 }

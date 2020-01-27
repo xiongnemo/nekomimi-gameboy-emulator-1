@@ -39,6 +39,11 @@ public:
     void save(void);
     void load(void);
 
+    // fast forward
+    void fast_forward(void);
+    uint8_t original_speed;
+    uint8_t running_speed;
+
 };
 } // namespace gameboy
 #endif

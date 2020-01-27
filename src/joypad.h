@@ -32,6 +32,8 @@ public:
     uint8_t save_flag = 0x00;
     uint8_t load_flag = 0x00;
 
+    uint8_t fast_forward_flag = 0x00;
+
     void joypad_interrupts(Memory &mem);
     void write_result(Memory &mem);
     void reset_joypad(void);
