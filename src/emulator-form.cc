@@ -314,6 +314,7 @@ void Emulatorform::create_window(uint16_t on_screen_window_width, uint16_t on_sc
     printf("Q - Quick Save\n");
     printf("Y - Quick Load\n");
     printf("P - Quit and Save\n\n");
+    printf("Note: We recommend you to load when the game actually start, or you may stuck.\n");
 
 }
 
