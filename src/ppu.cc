@@ -334,7 +334,9 @@ void Ppu::draw_line(uint8_t line_number_y, Memory &mem, Emulatorform &form, uint
 
     if (OBJ_enable)
     {
-        uint8_t sprite_size = 8 * (((lcdc_byte & 0x04) >> 2) + 1);
+        //sprite_height from LCDC bit 2
+        uint8_t sprite_height = 8 * (((lcdc_byte & 0x04) >> 2) + 1);
+        // 40 sprites, without flitering
         for (int sprite_id = 39; sprite_id >= 0; sprite_id--)
         {
             uint16_t current_oam_address = OAM_TABLE_INITIAL_ADDDRESS + sprite_id * 4;
@@ -354,9 +356,9 @@ void Ppu::draw_line(uint8_t line_number_y, Memory &mem, Emulatorform &form, uint
 
             int16_t sprite_y = y_position - 16; // y-coordinate offset: 0x10
             int16_t sprite_x = x_position - 8;  // x-coordinate offset: 0x08
-            uint16_t line = line_number_y - y_position + 16;
+            uint16_t line = line_number_y - sprite_y;
             // if not in this line, dont render
-            if (line_number_y < sprite_y || line >= sprite_size)
+            if (line_number_y < sprite_y || line >= sprite_height)
             {
                 continue;
             }
@@ -364,6 +366,7 @@ void Ppu::draw_line(uint8_t line_number_y, Memory &mem, Emulatorform &form, uint
             {
                 continue;
             }
+
             bool flip_x = attributes_x_flip;
             bool flip_y = attributes_y_flip;
 
@@ -373,13 +376,10 @@ void Ppu::draw_line(uint8_t line_number_y, Memory &mem, Emulatorform &form, uint
             if (flip_y)
             {
                 // flip vertically
-                line = PIXELS_PER_TILELINE - line - 1;
+                line = sprite_height - line - 1;
             }
 
             uint16_t tile_location = 0x8000 + (tile_index + 1) * 16 + line * 2;
-#ifdef DEBUG
-            printf("Drawing Sprite #%d at memory adddress %d\n", oam_entry_table[sprite_id].tile_index, tile_location);
-#endif
             uint8_t sprite_tile_line_one = mem.get_memory_byte(tile_location);
             uint8_t sprite_tile_line_two = mem.get_memory_byte(tile_location + 1);
 
@@ -393,7 +393,7 @@ void Ppu::draw_line(uint8_t line_number_y, Memory &mem, Emulatorform &form, uint
 
                 int pixel_x_in_line = PIXELS_PER_TILELINE - x % PIXELS_PER_TILELINE - 1;
 
-                if (flip_x)
+                if (flip_x || flip_y)
                 {
                     // flip horizontally
                     pixel_x_in_line = PIXELS_PER_TILELINE - pixel_x_in_line - 1;
@@ -405,7 +405,6 @@ void Ppu::draw_line(uint8_t line_number_y, Memory &mem, Emulatorform &form, uint
                 {
                     continue;
                 }
-
                 form.set_pixel_color(sprite_x + x, line_number_y, color, scale);
             }
         }
