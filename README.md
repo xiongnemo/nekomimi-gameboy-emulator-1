@@ -35,7 +35,7 @@ gcc version           8.3.0
 ```bash
 ./run.sh [rom-path/rom-name.gb]
 ```
-## Control
+## Keyboard Control
 
 ```
                 _n_________________
@@ -58,6 +58,32 @@ gcc version           8.3.0
                 |  SELECT    \\\\\\ | ----> T  
                 |    START          |       Enter
                 |________...______,"
+```
+## Joystick Control
+
+```
+                   Start
+                     |
+      _=====_        |                      _=====_
+     / _____ \       |                     / _____ \
+   +.-'_____'-.---------------------------.-'_____'-.+
+  /   |     |  '.    |   S P N Y        .'  |  _  |   \
+ / ___| /|\ |___ \   |                 / ___| /_\ |___ \   ----> Y or Triangle: Quick Load
+/ |      |      | ;  __           _   ; | _         _ | ;
+| | <---   ---> | | |__|         |_:> | ||_|       (_)| |  ----> B or Circle: B; X or Square: Quick Save
+| |___   |   ___| ;SELECT       START ; |___       ___| ;
+|\    | \|/ |    /  _     ___      _   \    | (X) |    /|  ----> A or Cross: A
+| \   |_____|  .','" "', |___|  ,'" "', '.  |_____|  .' |
+|  '-.______.-' /       \ANALOG/       \  '-._____.-'   |
+|               |       |------|       |                |
+|              /\       /      \       /\               |
+|             /  '.___.'        '.___.'  \              |
+|            /      |                     \             |
+ \          /       |                      \           /
+  \________/        |                       \_________/
+                Directions
+                    
+                    A DX3 Controller
 ```
 ## Dev Doc
 [Develop Documentation](./doc/README.md)
