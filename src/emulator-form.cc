@@ -27,7 +27,7 @@ bool Emulatorform::get_joypad_input(Joypad &joypad, Memory &mem)
         if (joypad_event.type == SDL_QUIT)
             return false;
 
-        // when you hit keys
+        // when you hit keys on keyboard
         if (joypad_event.type == SDL_KEYDOWN)
         {
             switch (joypad_event.key.keysym.sym)
@@ -122,8 +122,7 @@ bool Emulatorform::get_joypad_input(Joypad &joypad, Memory &mem)
             }
             //joypad.joypad_interrupts(mem);
         }
-
-        // when you release keys
+        // when you release keys on keyboard
         else if (joypad_event.type == SDL_KEYUP)
         {
             switch (joypad_event.key.keysym.sym)
@@ -195,7 +194,7 @@ bool Emulatorform::get_joypad_input(Joypad &joypad, Memory &mem)
                 //X axis motion
                 if( joypad_event.jaxis.axis == 0 )
                 {
-                    //Left of dead zone
+                    //Left of dead zone,
                     if( joypad_event.jaxis.value < -JOYSTICK_DEAD_ZONE )
                     {
                         joypad.key_column = 0x20;
@@ -213,7 +212,10 @@ bool Emulatorform::get_joypad_input(Joypad &joypad, Memory &mem)
                     }
                     else
                     {
-
+                        joypad.key_column = 0x20;
+                        joypad.column_direction = 1;
+                        joypad.keys_directions |= 0x2;
+                        joypad.keys_directions |= 0x1;
                     }
                 }
                 //Y axis motion
@@ -224,7 +226,7 @@ bool Emulatorform::get_joypad_input(Joypad &joypad, Memory &mem)
                     {
                         joypad.key_column = 0x20;
                         joypad.column_direction = 1;
-                        joypad.keys_directions &= 0x7;
+                        joypad.keys_directions &= 0xB;
                         break;
                     }
                     //Above of dead zone
@@ -232,14 +234,80 @@ bool Emulatorform::get_joypad_input(Joypad &joypad, Memory &mem)
                     {
                         joypad.key_column = 0x20;
                         joypad.column_direction = 1;
-                        joypad.keys_directions &= 0xB;
+                        joypad.keys_directions &= 0x7;
                         break;
                     }
                     else
                     {
-
+                        joypad.key_column = 0x20;
+                        joypad.column_direction = 1;
+                        joypad.keys_directions |= 0x8;
+                        joypad.keys_directions |= 0x4;
                     }
                 }
+            }
+        }
+        else if( joypad_event.type == SDL_JOYBUTTONDOWN)
+        {
+            switch (joypad_event.jbutton.button)
+            {
+            case SDL_CONTROLLER_BUTTON_A:
+                joypad.key_column = 0x10;
+                joypad.column_controls = 1;
+                joypad.keys_controls &= 0xE;
+                break;
+
+            case SDL_CONTROLLER_BUTTON_B:
+                joypad.key_column = 0x10;
+                joypad.column_controls = 1;
+                joypad.keys_controls &= 0xD;
+                break;
+
+            case SDL_CONTROLLER_BUTTON_START:
+                joypad.key_column = 0x10;
+                joypad.column_controls = 1;
+                joypad.keys_controls &= 0x7;
+                break;
+
+            // hit Quick Save
+            case SDL_CONTROLLER_BUTTON_X:
+                joypad.save_flag = 1;
+                printf("Will save before next poll...\n");
+                break;
+
+            // hit Quick Load
+            case SDL_CONTROLLER_BUTTON_Y:
+                joypad.load_flag = 1;
+                printf("Will load before next poll...\n");
+                break;
+
+            default:
+                break;
+            }
+        }
+        else if( joypad_event.type == SDL_JOYBUTTONUP)
+        {
+            switch (joypad_event.jbutton.button)
+            {
+            case SDL_CONTROLLER_BUTTON_A:
+                joypad.key_column = 0x10;
+                joypad.column_controls = 1;
+                joypad.keys_controls |= 0x1;
+                break;
+
+            case SDL_CONTROLLER_BUTTON_B:
+                joypad.key_column = 0x10;
+                joypad.column_controls = 1;
+                joypad.keys_controls |= 0x2;
+                break;
+
+            case SDL_CONTROLLER_BUTTON_START:
+                joypad.key_column = 0x10;
+                joypad.column_controls = 1;
+                joypad.keys_controls |= 0x8;
+                break;
+            default:
+                break;
             }
         }
     }
@@ -270,8 +338,8 @@ void Emulatorform::set_pixel_color(uint8_t pos_x, uint8_t pos_y, uint8_t color, 
 
 void Emulatorform::create_window(uint16_t on_screen_window_width, uint16_t on_screen_window_height, std::string on_screen_title, uint8_t rgb_red, uint8_t rgb_green, uint8_t rgb_blue, uint8_t scale)
 {
-    // just init video
-    SDL_Init(SDL_INIT_VIDEO);
+    // init video and joystick
+    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
 
     // get physical devices' resolution
     uint16_t physical_device_res_width = 0;
@@ -306,12 +374,23 @@ void Emulatorform::create_window(uint16_t on_screen_window_width, uint16_t on_sc
         {
             printf( "Warning: Unable to open game controller! SDL Error: %s\n", SDL_GetError() );
         }
+        else
+        {
+            printf("Joystick connected!\n");
+        }
     }
     printf("\n\nCurrent Key Mapping:\n");
-    printf("W - UP       S - DOWN    A - LEFT   D - RIGHT\t\n");
+    printf("W - UP       S - DOWN    A - LEFT   D - RIGHT\n");
     printf("J - A        K - B\n");
     printf("T - Select   Enter - Start\n");
     printf("Q - Quick Save\n");
+    printf("Y - Quick Load\n");
+    printf("P - Quit and Save\n\n");
+    printf("\n\nCurrent Joystick Mapping:\n");
+    printf("Left Analog Stick: Directions\n");
+    printf("START - Start         Tips: In DS3 Controller, use SELECT for START\n");
+    printf("A - A        B - B\n");
+    printf("X - Quick Save\n");
     printf("Y - Quick Load\n");
     printf("P - Quit and Save\n\n");
     printf("Note: We recommend you to load when the game actually start, or you may stuck.\n");
