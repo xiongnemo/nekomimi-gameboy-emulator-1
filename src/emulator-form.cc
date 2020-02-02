@@ -376,7 +376,7 @@ void Emulatorform::create_window(uint16_t on_screen_window_width, uint16_t on_sc
         }
         else
         {
-            printf("Joystick connected!\n");
+            printf("[Joystick connected!]\n");
         }
     }
     printf("\n\nCurrent Key Mapping:\n");
@@ -385,15 +385,14 @@ void Emulatorform::create_window(uint16_t on_screen_window_width, uint16_t on_sc
     printf("T - Select   Enter - Start\n");
     printf("Q - Quick Save\n");
     printf("Y - Quick Load\n");
-    printf("P - Quit and Save\n\n");
+    printf("P - Quit and Save\n");
     printf("\n\nCurrent Joystick Mapping:\n");
     printf("Left Analog Stick: Directions\n");
     printf("START - Start         Tips: In DS3 Controller, use SELECT for START\n");
     printf("A - A        B - B\n");
     printf("X - Quick Save\n");
     printf("Y - Quick Load\n");
-    printf("P - Quit and Save\n\n");
-    printf("Note: We recommend you to load when the game actually start, or you may stuck.\n");
+    printf("Note: We recommend you to load when the game actually start, or you may stuck.\n\n");
 
 }
 
