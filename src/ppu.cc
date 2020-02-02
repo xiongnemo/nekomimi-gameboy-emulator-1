@@ -5,11 +5,11 @@ using gameboy::Memory;
 using gameboy::Ppu;
 using gameboy::PpuMode;
 
-void Ppu::ppu_main(uint8_t clocks, Memory &mem, Emulatorform &form, uint8_t scale)
+void Ppu::ppu_main(uint8_t clocks, uint8_t speed_hack, Memory &mem, Emulatorform &form, uint8_t scale)
 {
     reset_interrupt_registers(mem);
     // sync with system cycles
-    add_time(clocks);
+    add_time(clocks * speed_hack);
 
     // 1 clock == 4 dots
     // 0~20*4-1 (0~79) OAM Search
@@ -43,7 +43,7 @@ void Ppu::ppu_main(uint8_t clocks, Memory &mem, Emulatorform &form, uint8_t scal
         {
             ppu_inner_clock = ppu_inner_clock - 205;
 
-            h_blank(mem, form, scale);
+            h_blank(speed_hack, mem, form, scale);
 
             uint8_t ly_byte = mem.get_memory_byte(LY_ADDRESS);
             // if LY >= SCREEN_HEIGHT enter vblank in next loop, flush buffer to screen now
@@ -104,13 +104,16 @@ void Ppu::pixel_transfer(Memory &mem)
     }
 }
 
-void Ppu::h_blank(Memory &mem, Emulatorform &form, uint8_t scale)
+void Ppu::h_blank(uint8_t speed_hack, Memory &mem, Emulatorform &form, uint8_t scale)
 {
     // get current line
     uint8_t ly_byte = mem.get_memory_byte(LY_ADDRESS);
 
+    uint8_t lcdc_byte = mem.get_memory_byte(LCDC_ADDRESS);
+
     // draw current line
-    draw_line(ly_byte, mem, form, scale);
+    if (lcdc_byte & 0x01)
+        draw_line(ly_byte, mem, form, scale);
 
     // write LY value into memory
     ly_byte++;
@@ -135,11 +138,11 @@ void Ppu::set_mode(PpuMode mode, Memory &mem)
     uint8_t interrupt_flag_byte = mem.get_memory_byte(IF_ADDRESS);
 
     // change and write mode in STAT to registers
-
     // set STAT
-
-    stat_byte = stat_byte & 0xFC;
-    stat_byte = stat_byte | (mode & 0x03);
+    // first, unset bit 0 and bit 1
+    stat_byte &= 0xFC;
+    // second, set bit 0 and bit 1 according to mode
+    stat_byte |= (mode & 0x03);
 
     // v_blank Interrupt
     if (mode == PpuMode::mode_vblank)
@@ -147,9 +150,16 @@ void Ppu::set_mode(PpuMode mode, Memory &mem)
         interrupt_flag_byte |= 0x01;
     }
 
-    if ((mode == PpuMode::mode_hblank && (stat_byte & 0x0F)) ||
-            (mode == PpuMode::mode_vblank && (stat_byte & 0x10)) ||
-            (mode == PpuMode::mode_oam_search && (stat_byte & 0x20)))
+    // LCDC Status interrupt
+    // if current mode equal with the mode represented by specific bit in STAT
+    // bit 5: OAM search
+    // bit 4: V-Blank
+    // bit 3: H-Blank
+    if (
+        ((mode == PpuMode::mode_hblank) && (stat_byte & 0x0F)) ||
+        ((mode == PpuMode::mode_vblank) && (stat_byte & 0x10)) ||
+        ((mode == PpuMode::mode_oam_search) && (stat_byte & 0x20))
+    )
 
     {
         interrupt_flag_byte |= 0x02;
@@ -343,6 +353,16 @@ void Ppu::draw_line(uint8_t line_number_y, Memory &mem, Emulatorform &form, uint
             uint8_t y_position = mem.get_memory_byte(current_oam_address);
             uint8_t x_position = mem.get_memory_byte(current_oam_address + 1);
             uint8_t tile_index = mem.get_memory_byte(current_oam_address + 2);
+            tile_index++;
+            //if (sprite_height == 16)
+            //{
+            //    // lsb of the sprite pattern number is ignored and treated as 0.
+            //    tile_index &= 0xFE;
+            //}
+            //else
+            //{
+            //    tile_index &= 0xFF;
+            //}
             uint8_t temp_attritube = mem.get_memory_byte(current_oam_address + 3);
             //bool attributes_priority = temp_attritube & 0x80;
             bool attributes_y_flip = temp_attritube & 0x40;
@@ -379,7 +399,7 @@ void Ppu::draw_line(uint8_t line_number_y, Memory &mem, Emulatorform &form, uint
                 line = sprite_height - line - 1;
             }
 
-            uint16_t tile_location = 0x8000 + (tile_index + 1) * 16 + line * 2;
+            uint16_t tile_location = 0x8000 + tile_index * 16 + line * 2;
             uint8_t sprite_tile_line_one = mem.get_memory_byte(tile_location);
             uint8_t sprite_tile_line_two = mem.get_memory_byte(tile_location + 1);
 
@@ -420,10 +440,18 @@ void Ppu::update_lyc(Memory &mem)
     // determine whether LY==LYC
     if (ly_byte == lyc_byte)
     {
+        // set Coincidence Flag (bit 2)
         stat_byte |= 0x04;
+        if (stat_byte & 0x40)
+        {
+            uint8_t interrupt_flag_byte = mem.get_memory_byte(IF_ADDRESS);
+            interrupt_flag_byte |= 0x02;
+            mem.set_memory_byte(IF_ADDRESS, interrupt_flag_byte);
+        }
     }
     else
     {
+        // unset Coincidence Flag (bit 2)
         stat_byte &= 0xFB;
     }
 
@@ -441,7 +469,7 @@ void Ppu::reset_interrupt_registers(Memory &mem)
     uint8_t interrupt_flag_byte = mem.get_memory_byte(IF_ADDRESS);
 
     // change bit 0 (V-Blank) and bit 1 to 0 (LCDC Status)
-    interrupt_flag_byte &= 0x03;
+    interrupt_flag_byte &= 0xFC;
 
     // write result to memory
     mem.set_memory_byte(IF_ADDRESS, interrupt_flag_byte);

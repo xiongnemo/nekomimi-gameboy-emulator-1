@@ -47,7 +47,7 @@ public:
     bool ready_to_refresh = false;
 
     // Main
-    void ppu_main(uint8_t clocks, Memory &mem, Emulatorform &form, uint8_t scale);
+    void ppu_main(uint8_t clocks, uint8_t speed_hack, Memory &mem, Emulatorform &form, uint8_t scale);
 
     // for each line in first 144 lines
     // 20 clocks for OAMSearch
@@ -55,7 +55,7 @@ public:
     // 43 clocks for PixelTransfer (DMA)
     void pixel_transfer(Memory &mem);
     // 51 clock0s for HBlank
-    void h_blank(Memory &mem, Emulatorform &form, uint8_t scale);
+    void h_blank(uint8_t speed_hack, Memory &mem, Emulatorform &form, uint8_t scale);
     // for last 10 lines * (20+43+51) clocks per line
     // there's VBlank
     void v_blank(Memory &mem);

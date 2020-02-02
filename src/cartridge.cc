@@ -210,31 +210,35 @@ void Cartridge::ppu_optimizaion(void)
 {
     if (strcmp(rom_name, "BOXES") == 0)
     {
-        auto_optimization = 1;
+        auto_optimization = 4;
     }
     else if (strcmp(rom_name, "SUPER MARIOLAND") == 0)
     {
-        auto_optimization = 6;
+        auto_optimization = 1;
+        printf("Marioland: force compatibility mode.\n\n");
     }
     else if (strcmp(rom_name, "TETRIS") == 0)
     {
-        auto_optimization = 16;
+        auto_optimization = 4;
     }
     else if (strcmp(rom_name, "BATTLECITY") == 0)
     {
-        auto_optimization = 6;
+        auto_optimization = 4;
     }
     else if (strcmp(rom_name, "Opus Test") == 0)
     {
-        auto_optimization = 16;
+        auto_optimization = 4;
+    }
+    else if (strcmp(rom_name, "CPU_INSTRS") == 0)
+    {
+        auto_optimization = 1;
+        printf("Entering CPU test: running at original speed.\n");
+        printf("Please wait patiently untill it pass all the tests...\n\n");
     }
     else
     {
-        auto_optimization = 16;
+        auto_optimization = 4;
     }
-#ifdef DEBUG
-    printf("ppu optimization set to %dx\n", auto_optimization);
-#endif // DEBUG
 }
 
 uint8_t Cartridge::get_cartridge_byte(uint16_t address)

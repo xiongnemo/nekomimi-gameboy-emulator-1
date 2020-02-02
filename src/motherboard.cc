@@ -95,7 +95,7 @@ void Motherboard::loop(Emulatorform &form, Joypad &joypad, uint8_t scale)
         if (form.get_joypad_input(joypad, mem))
         {
             uint8_t cpu_cycle = cpu.next(mem);
-            ppu.ppu_main(running_speed * cpu_cycle, mem, form, scale);
+            ppu.ppu_main(4 * cpu_cycle, running_speed, mem, form, scale);
             timer.add_time(4 * cpu_cycle, mem);
             //if(SDL_GetTicks()-fps_timer < FPS && ppu.ready_to_refresh)
             if(ppu.ready_to_refresh)
@@ -143,7 +143,7 @@ void Motherboard::save(void)
     strcat(name_buffer, ".gbsave");
     FILE *save_out = fopen(name_buffer, "w+b");
     fwrite(mem.memory_byte, sizeof(uint8_t), 0x10000, save_out);
-    printf("Memory written to save.gbsave.\n");
+    printf("Memory written to %s.\n", name_buffer);
     fwrite(cpu.reg.register_byte, sizeof(uint8_t), 0x08, save_out);
     fwrite(cpu.reg.register_word, sizeof(uint16_t), 0x02, save_out);
     printf("Registers written to %s.\n", name_buffer);
@@ -159,7 +159,7 @@ void Motherboard::load(void)
     strcat(name_buffer, ".gbsave");
     FILE *save_in = fopen(name_buffer, "r+b");
     fread(mem.memory_byte, sizeof(uint8_t), 0x10000, save_in);
-    printf("Memory restored from save.gbsave.\n");
+    printf("Memory restored from %s.\n", name_buffer);
     fread(cpu.reg.register_byte, sizeof(uint8_t), 0x08, save_in);
     fread(cpu.reg.register_word, sizeof(uint16_t), 0x02, save_in);
     printf("Registers restored from %s.\n", name_buffer);
