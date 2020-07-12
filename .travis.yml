@@ -1,5 +1,7 @@
+language: c++
 sudo: required
 before_install:
   - sudo apt-get update
   - sudo apt-get install libsdl2-dev cmake
 script: ./build.sh
+compiler: gcc
