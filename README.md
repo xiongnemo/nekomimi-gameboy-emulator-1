@@ -1,6 +1,6 @@
 # Nekomimi GameBoy Emulator
 
-[![Travis CI Badge](https://travis-ci.org/xiongnemo/nekomimi-gameboy-emulator-1.svg)](https://travis-ci.org/github/xiongnemo/nekomimi-gameboy-emulator-1)
+[![Travis CI Badge](https://api.travis-ci.org/xiongnemo/nekomimi-gameboy-emulator-1.svg)](https://travis-ci.org/github/xiongnemo/nekomimi-gameboy-emulator-1)
 [![CodeFactor](https://www.codefactor.io/repository/github/xiongnemo/nekomimi-gameboy-emulator-1/badge)](https://www.codefactor.io/repository/github/xiongnemo/nekomimi-gameboy-emulator-1)
 
 
