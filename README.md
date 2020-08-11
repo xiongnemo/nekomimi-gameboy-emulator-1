@@ -2,6 +2,7 @@
 
 [![Travis CI Badge](https://api.travis-ci.org/xiongnemo/nekomimi-gameboy-emulator-1.svg)](https://travis-ci.org/github/xiongnemo/nekomimi-gameboy-emulator-1)
 [![CodeFactor](https://www.codefactor.io/repository/github/xiongnemo/nekomimi-gameboy-emulator-1/badge)](https://www.codefactor.io/repository/github/xiongnemo/nekomimi-gameboy-emulator-1)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fxiongnemo%2Fnekomimi-gameboy-emulator-1.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fxiongnemo%2Fnekomimi-gameboy-emulator-1?ref=badge_shield)
 
 
 *This fork is maintained by Marshmallow.
@@ -125,3 +126,7 @@ Thanks for all those nice guys sharing their techniacl knowledge and experience 
 - [Mohanson's gameboy](https://github.com/mohanson/gameboy)
 - [Gbdev Wiki](http://gbdev.gg8.se/wiki/articles/Main_Page)
 - [GameBoy CPU(LR35902) instruction set](http://www.pastraiser.com/cpu/gameboy/gameboy_opcodes.html)
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fxiongnemo%2Fnekomimi-gameboy-emulator-1.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fxiongnemo%2Fnekomimi-gameboy-emulator-1?ref=badge_large)
